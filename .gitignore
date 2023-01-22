@@ -1,0 +1,6 @@
+alembic/
+boost/
+Imath/
+
+*.zip
+*.abc
