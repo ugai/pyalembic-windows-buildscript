@@ -45,6 +45,9 @@ if ($BuildBoost) {
 $BuildImath = $true
 if ($BuildImath) {
     git clone https://github.com/AcademySoftwareFoundation/Imath
+
+    & $PythonExe -m pip install numpy
+
     if (!(Test-Path Imath/build)) { mkdir Imath/build }
     Push-Location Imath/build
     cmake .. -DPython_EXECUTABLE="$PythonExe" -DPython3_EXECUTABLE="$PythonExe" -DPYTHON=ON -DBoost_ROOT="../../$BoostZipDestName" -DCMAKE_INSTALL_PREFIX="../_installed"
