@@ -19,26 +19,23 @@ To build PyAlembic, follow these steps:
 2. Open a PowerShell terminal and navigate to the repository folder.
 3. Run the `build.ps1` script with the `-PythonRoot` option, specifying the path to your Python installation. For example:
 
-```powershell
-PS C:\builds\pyalembic-windows-buildscript> .\build.ps1 -PythonRoot "$env:USERPROFILE\.pyenv\pyenv-win\versions\3.10.8" | Tee-Object build.log
-```
+    ```powershell
+    PS C:\builds\pyalembic-windows-buildscript> .\build.ps1 -PythonRoot "$env:USERPROFILE\.pyenv\pyenv-win\versions\3.10.8" | Tee-Object build.log
+    ```
+
+A .whl file will be output to the `dist` directory.
 
 ## Usage
 
-To use PyAlembic in your Python scripts, you need to add the DLL directories of the dependencies and PyAlembic to your system path. For example:
-
-```python
-import os
-BUILD_ROOT = r"C:\builds\pyalembic-windows-buildscript"
-os.add_dll_directory(rf"{BUILD_ROOT}\boost\stage\lib")
-os.add_dll_directory(rf"{BUILD_ROOT}\Imath\_installed\bin")
-os.add_dll_directory(rf"{BUILD_ROOT}\alembic\_installed\lib")
-```
-
-Then you can import the `alembic` module and use its classes and functions. For example:
+To use PyAlembic module in your Python scripts, import the `alembic` module. For example:
 
 ```python
 import alembic
+
+# Print a version
+print(alembic.Abc.GetLibraryVersion())
+
+# Create an .abc file
 arch = alembic.Abc.OArchive("hoge.abc")
 assert os.path.exists("hoge.abc")
 ```
