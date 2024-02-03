@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: ["windows-latest"]
-        python-version: ["3.10"]
+        python-version: ["3.10", "3.11"]
         architecture: ['x64']
 
     steps:
@@ -37,8 +37,13 @@ jobs:
           ./build.ps1 -PythonRoot $PythonRoot
         shell: pwsh
 
+      - name: Compute the release tag
+        run: |
+          echo "release_tag=v`date '+%Y-%m-%d'`" >> $GITHUB_ENV
+        shell: bash
       - name: Release
         if: ${{ inputs.runReleaseAction }}
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ env.release_tag }}
           files: ./dist/*.whl
