@@ -1,5 +1,7 @@
-$BoostZipUrl = "https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.zip"
-$PythonRoot = "$env:USERPROFILE\.pyenv\pyenv-win\versions\3.10.8"
+param (
+    [string]$BoostZipUrl = "https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.zip",
+    [string]$PythonRoot = "$env:USERPROFILE\.pyenv\pyenv-win\versions\3.10.8"
+)
 
 Write-Output "Start ($(Get-Date))"
 Write-Output "PythonRoot: '$PythonRoot'"
