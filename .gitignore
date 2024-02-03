@@ -2,5 +2,8 @@ alembic/
 boost/
 Imath/
 
+dist/
+*.egg-info/
+
 *.zip
 *.abc
