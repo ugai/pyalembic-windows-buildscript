@@ -15,7 +15,6 @@ $ProgressPreference = 'SilentlyContinue'
 
 $PythonRoot = $PythonRoot -replace "\\", "/" # replace backslashes
 $PythonExe = "$PythonRoot/Python.exe"
-$PythonModuleInstallDest = "$PythonRoot/Lib/site-packages"
 
 $BoostZipName = $BoostZipUrl.Split("/")[-1]
 $BoostZipNameNoExt = $BoostZipName.Substring(0, $BoostZipName.LastIndexOf('.'))
@@ -41,7 +40,7 @@ if (-Not $SkipBoost) {
     Push-Location boost
     .\bootstrap.bat
     Write-Output "using python : : $PythonRoot ;" > user-config.jam
-    .\b2 --build-type=complete --with-python --user-config=user-config.jam
+    .\b2 --build-type=complete --variant=release --with-python --user-config=user-config.jam
     Pop-Location
 }
 
@@ -66,7 +65,6 @@ if (-Not $SkipImath) {
     cmake .. -DPython_EXECUTABLE="$PythonExe" -DPython3_EXECUTABLE="$PythonExe" -DPYTHON=ON -DBoost_ROOT="../../$BoostZipDestName" -DCMAKE_INSTALL_PREFIX="../_installed"
     cmake --build . --config Release
     cmake --install .
-    Copy-Item "../_installed/lib/site-packages/*.pyd" $PythonModuleInstallDest
     Pop-Location
 }
 
@@ -78,8 +76,22 @@ if (-Not $SkipAlembic) {
     cmake .. -DUSE_PYALEMBIC=ON -DImath_DIR="../Imath/_installed/lib/cmake/Imath" -DPython3_EXECUTABLE="$PythonExe" -DBoost_ROOT="../../$BoostZipDestName" -DCMAKE_INSTALL_PREFIX="../_installed" -DALEMBIC_PYTHON_INSTALL_DIR="../_installed/lib/site-packages"
     cmake --build . --config Release
     cmake --install .
-    Copy-Item "../_installed/lib/site-packages/*.pyd" $PythonModuleInstallDest
     Pop-Location
+}
+
+# Create wheel package
+if (-Not $SkipPackaging) {
+    & $PythonExe setup.py bdist_wheel
+}
+
+# Install wheel package
+if (-Not $SkipInstall) {
+    foreach ($file in (Get-ChildItem -File "dist\*.whl")) {
+        & $PythonExe -m pip install $file --upgrade --force-reinstall
+    }
+
+    # Test module import
+    & $PythonExe -c "import alembic"
 }
 
 Write-Output "End ($(Get-Date))"
