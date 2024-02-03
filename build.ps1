@@ -1,6 +1,11 @@
 param (
     [string]$BoostZipUrl = "https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.zip",
-    [string]$PythonRoot = "$env:USERPROFILE\.pyenv\pyenv-win\versions\3.10.8"
+    [string]$PythonRoot = "${env:USERPROFILE}\.pyenv\pyenv-win\versions\3.10.8",
+    [switch]$SkipBoost,
+    [switch]$SkipImath,
+    [switch]$SkipAlembic,
+    [switch]$SkipPackaging,
+    [switch]$SkipInstall
 )
 
 Write-Output "Start ($(Get-Date))"
@@ -17,8 +22,7 @@ $BoostZipNameNoExt = $BoostZipName.Substring(0, $BoostZipName.LastIndexOf('.'))
 $BoostZipDestName = "boost"
 
 # Build boost
-$BuildBoost = $true
-if ($BuildBoost) {
+if (-Not $SkipBoost) {
     # Download zip
     if (!(Test-Path $BoostZipName)) {
         Write-Output "Download: '$BoostZipUrl'"
@@ -42,8 +46,7 @@ if ($BuildBoost) {
 }
 
 # Build imath
-$BuildImath = $true
-if ($BuildImath) {
+if (-Not $SkipImath) {
     git clone https://github.com/AcademySoftwareFoundation/Imath
 
     Push-Location Imath
@@ -68,8 +71,7 @@ if ($BuildImath) {
 }
 
 # Build alembic
-$BuildAlembic = $true
-if ($BuildAlembic) {
+if (-Not $SkipAlembic) {
     git clone https://github.com/alembic/alembic
     if (!(Test-Path alembic/build)) { mkdir alembic/build }
     Push-Location alembic/build
