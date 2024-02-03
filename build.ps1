@@ -46,6 +46,16 @@ $BuildImath = $true
 if ($BuildImath) {
     git clone https://github.com/AcademySoftwareFoundation/Imath
 
+    Push-Location Imath
+    # The commit below from the Imath repo causes a PyAlembic build error:
+    #
+    #   src/python/config: do not install a cmake file exporting targets for dependent projects #361
+    #   https://github.com/AcademySoftwareFoundation/Imath/pull/361/commits/e79adb7e9e2876243b67a59828b3651f4e187781
+    #
+    # Checkout the previous commit to avoid the error.
+    git checkout 84f9a674802f6c3197bd478c9b40399f451fecb3
+    Pop-Location
+
     & $PythonExe -m pip install numpy
 
     if (!(Test-Path Imath/build)) { mkdir Imath/build }
