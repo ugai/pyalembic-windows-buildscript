@@ -42,7 +42,7 @@ if (-Not $SkipBoost) {
     try {
         .\bootstrap.bat
         Write-Output "using python : : $PythonRoot ;" > user-config.jam
-        .\b2 --build-type=complete --variant=release --with-python --user-config=user-config.jam
+        .\b2 --build-type=complete --address-model=64 --variant=release --with-python --user-config=user-config.jam
     }
     finally {
         Pop-Location
@@ -89,7 +89,7 @@ if (-Not $SkipAlembic) {
     Push-Location alembic/build
 
     try {
-        cmake .. -DUSE_PYALEMBIC=ON -DImath_DIR="../Imath/_installed/lib/cmake/Imath" -DPython3_EXECUTABLE="$PythonExe" -DBoost_ROOT="../../$BoostZipDestName" -DCMAKE_INSTALL_PREFIX="../_installed" -DALEMBIC_PYTHON_INSTALL_DIR="../_installed/lib/site-packages"
+        cmake .. -DUSE_PYALEMBIC=ON -DCMAKE_CXX_FLAGS="/wd4251" -DImath_DIR="../Imath/_installed/lib/cmake/Imath" -DPython3_EXECUTABLE="$PythonExe" -DBoost_ROOT="../../$BoostZipDestName" -DCMAKE_INSTALL_PREFIX="../_installed" -DALEMBIC_PYTHON_INSTALL_DIR="../_installed/lib/site-packages"
         cmake --build . --config Release
         cmake --install .
     }
