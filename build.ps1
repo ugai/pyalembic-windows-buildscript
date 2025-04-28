@@ -42,7 +42,7 @@ if (-Not $SkipBoost) {
     try {
         .\bootstrap.bat
         Write-Output "using python : : $PythonRoot ;" > user-config.jam
-        .\b2 --build-type=complete --address-model=64 --variant=release --with-python --user-config=user-config.jam
+        .\b2 -a address-model=64 --variant=release --with-python --user-config=user-config.jam
     }
     finally {
         Pop-Location
