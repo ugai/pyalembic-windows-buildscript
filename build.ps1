@@ -1,7 +1,7 @@
 param (
     [string]$BoostZipUrl = "https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-b2-nodocs.zip",
     [string]$BoostZipExtractedName = "boost-1.87.0",
-    [string]$PythonRoot = "${env:USERPROFILE}\.pyenv\pyenv-win\versions\3.10.8",
+    [string]$PythonRoot = "C:\Program Files\Python311",
     [switch]$SkipBoost,
     [switch]$SkipImath,
     [switch]$SkipAlembic,
