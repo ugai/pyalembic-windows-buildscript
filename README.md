@@ -20,10 +20,16 @@ To build PyAlembic, follow these steps:
 3. Run the `build.ps1` script with the `-PythonRoot` option, specifying the path to your Python installation. For example:
 
     ```powershell
-    PS C:\builds\pyalembic-windows-buildscript> .\build.ps1 -PythonRoot "$env:USERPROFILE\.pyenv\pyenv-win\versions\3.10.8" | Tee-Object build.log
+    PS C:\builds\pyalembic-windows-buildscript> .\build.ps1 -PythonRoot "C:\Program Files\Python314" | Tee-Object build.log
     ```
 
 A .whl file will be output to the `dist` directory.
+
+## Pre-built Wheels
+
+Pre-built wheels are available on the [Releases](https://github.com/ugai/pyalembic-windows-buildscript/releases) page.
+
+Note: the wheels bundle third-party libraries (Alembic, Imath, Boost) under their respective licenses, which differ from the CC0 license of this repository.
 
 ## Usage
 
