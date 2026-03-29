@@ -16,23 +16,26 @@ $ProgressPreference = 'SilentlyContinue'
 
 $PythonRoot = $PythonRoot -replace "\\", "/" # replace backslashes
 $PythonExe = "$PythonRoot/Python.exe"
+$PythonVersion = & $PythonExe -c "import sys; print(f'{sys.version_info.major}{sys.version_info.minor}')"
 
 $BoostZipName = $BoostZipUrl.Split("/")[-1]
 $BoostZipDestName = "boost"
+$BoostAbsPath = (Join-Path $PWD $BoostZipDestName) -replace "\\", "/"
+$ImathAbsPath = (Join-Path $PWD "Imath/_installed") -replace "\\", "/"
 
 # Build boost
 if (-Not $SkipBoost) {
     # Download zip
     if (!(Test-Path $BoostZipName)) {
         Write-Output "Download: '$BoostZipUrl'"
-        Invoke-WebRequest -Uri $BoostZipUrl -OutFile $BoostZipName   
+        Invoke-WebRequest -Uri $BoostZipUrl -OutFile $BoostZipName
     }
-    
+
     # Extract zip
     if (!(Test-Path $BoostZipDestName)) {
         Write-Output "Unzip: '$BoostZipName'"
         Expand-Archive -Path $BoostZipName -DestinationPath . -Force
-    
+
         Write-Output "Move: '$BoostZipExtractedName' -> '$BoostZipDestName'"
         Move-Item $BoostZipExtractedName $BoostZipDestName
     }
@@ -40,11 +43,17 @@ if (-Not $SkipBoost) {
     Push-Location boost
 
     try {
+        # Temporarily unset NoDefaultCurrentDirectoryInExePath so that
+        # Boost's bootstrap batch files can find each other via relative paths.
+        $origNoDirExe = $env:NoDefaultCurrentDirectoryInExePath
+        $env:NoDefaultCurrentDirectoryInExePath = $null
+
         .\bootstrap.bat
-        Write-Output "using python : : $PythonRoot ;" > user-config.jam
-        .\b2 -a address-model=64 --variant=release --with-python --user-config=user-config.jam
+        "using python : : $PythonRoot ;" | Out-File -Encoding ascii user-config.jam
+        .\b2 -a address-model=64 --variant=release link=shared --with-python --user-config=user-config.jam
     }
     finally {
+        $env:NoDefaultCurrentDirectoryInExePath = $origNoDirExe
         Pop-Location
     }
 }
@@ -61,6 +70,8 @@ if (-Not $SkipImath) {
         #   https://github.com/AcademySoftwareFoundation/Imath/pull/361/commits/e79adb7e9e2876243b67a59828b3651f4e187781
         #
         # Checkout the previous commit to avoid the error.
+        # TODO: Remove this pin once Imath releases a version that includes PR #507 and the
+        # PyImath COMPONENT fix (see issue #395).
         git checkout 84f9a674802f6c3197bd478c9b40399f451fecb3
     }
     finally {
@@ -73,7 +84,7 @@ if (-Not $SkipImath) {
     Push-Location Imath/build
 
     try {
-        cmake .. -DPython_EXECUTABLE="$PythonExe" -DPython3_EXECUTABLE="$PythonExe" -DPYTHON=ON -DBoost_ROOT="../../$BoostZipDestName" -DCMAKE_INSTALL_PREFIX="../_installed"
+        cmake .. -DPython_EXECUTABLE="$PythonExe" -DPython3_EXECUTABLE="$PythonExe" -DPYTHON=ON -DPYBIND11=OFF -DBoost_ROOT="$BoostAbsPath" -DBoost_NO_BOOST_CMAKE=OFF -DBoost_USE_STATIC_LIBS=OFF -DPYIMATH_BOOST_PY_COMPONENT="python$PythonVersion" -DCMAKE_CXX_FLAGS="/bigobj /DBOOST_ALL_NO_LIB" -DCMAKE_INSTALL_PREFIX="../_installed"
         cmake --build . --config Release
         cmake --install .
     }
@@ -85,11 +96,17 @@ if (-Not $SkipImath) {
 # Build alembic
 if (-Not $SkipAlembic) {
     git clone https://github.com/alembic/alembic
+
+    # Patch: specify versioned Boost python component (e.g. python311) so
+    # FindBoost can locate the correct library.
+    $pyAlembicCMake = "alembic/python/PyAlembic/CMakeLists.txt"
+    (Get-Content $pyAlembicCMake) -replace 'COMPONENTS python\)', "COMPONENTS python$PythonVersion)" | Set-Content $pyAlembicCMake
+
     if (!(Test-Path alembic/build)) { mkdir alembic/build }
     Push-Location alembic/build
 
     try {
-        cmake .. -DUSE_PYALEMBIC=ON -DCMAKE_CXX_FLAGS="/wd4251" -DImath_DIR="../Imath/_installed/lib/cmake/Imath" -DPython3_EXECUTABLE="$PythonExe" -DBoost_ROOT="../../$BoostZipDestName" -DCMAKE_INSTALL_PREFIX="../_installed" -DALEMBIC_PYTHON_INSTALL_DIR="../_installed/lib/site-packages"
+        cmake .. -DUSE_PYALEMBIC=ON -DUSE_STATIC_BOOST=OFF -DCMAKE_CXX_FLAGS="/wd4251 /DBOOST_ALL_NO_LIB" -DImath_DIR="$ImathAbsPath/lib/cmake/Imath" -DPython_EXECUTABLE="$PythonExe" -DPython3_EXECUTABLE="$PythonExe" -DBoost_ROOT="$BoostAbsPath" -DCMAKE_INSTALL_PREFIX="../_installed" -DALEMBIC_PYTHON_INSTALL_DIR="../_installed/lib/site-packages"
         cmake --build . --config Release
         cmake --install .
     }
