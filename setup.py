@@ -37,9 +37,20 @@ def get_orig_setup_py_value(name: str) -> str:
     return s.rstrip()
 
 
+def get_alembic_version() -> str:
+    """Read the Alembic version from CMakeLists.txt."""
+    import re
+    with open("alembic/CMakeLists.txt", encoding="utf-8") as f:
+        for line in f:
+            m = re.search(r"PROJECT\(Alembic\s+VERSION\s+([\d.]+)\)", line)
+            if m:
+                return m.group(1)
+    raise RuntimeError("Could not find Alembic version in CMakeLists.txt")
+
+
 setup(
     name=get_orig_setup_py_value("name"),
-    version=get_orig_setup_py_value("version"),
+    version=get_alembic_version(),
     author=get_orig_setup_py_value("author"),
     author_email=get_orig_setup_py_value("author-email"),
     description=get_orig_setup_py_value("description"),
