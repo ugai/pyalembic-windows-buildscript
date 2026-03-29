@@ -15,14 +15,17 @@ class CustomInstallCommand(install):
             # *.pyd files
             "alembic/_installed/lib/site-packages/*.pyd",
             "Imath/_installed/lib/site-packages/*.pyd",
+            "Imath/_installed/Lib/site-packages/*.pyd",
             # *.dll files
-            "boost/stage/lib/*.dll",
-            "alembic/_installed/lib/*.dll",
+            "boost/stage/lib/boost_python*.dll",
+            "alembic/_installed/bin/*.dll",
             "Imath/_installed/bin/*.dll",
         ]
 
         for pattern in GLOB_PATTERNS:
             for rel_path in glob.glob(pattern):
+                if "-gd-" in rel_path:  # skip debug Boost DLLs
+                    continue
                 print(f"file copy: '{rel_path}' -> '{self.install_lib}'")
                 shutil.copy(rel_path, self.install_lib)
 
