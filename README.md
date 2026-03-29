@@ -29,7 +29,11 @@ A .whl file will be output to the `dist` directory.
 
 Pre-built wheels are available on the [Releases](https://github.com/ugai/pyalembic-windows-buildscript/releases) page.
 
-Note: the wheels bundle third-party libraries (Alembic, Imath, Boost) under their respective licenses, which differ from the CC0 license of this repository.
+> [!NOTE]
+> These wheels support the Ogawa format only. HDF5-based `.abc` files (created by older software) are not supported.
+
+> [!NOTE]
+> The wheels bundle third-party libraries (Alembic, Imath, Boost) under their respective licenses, which differ from the CC0 license of this repository.
 
 ## Usage
 
