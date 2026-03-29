@@ -6,13 +6,23 @@ param (
     [switch]$SkipImath,
     [switch]$SkipAlembic,
     [switch]$SkipPackaging,
-    [switch]$SkipInstall
+    [switch]$SkipInstall,
+    [bool]$CleanCC = $true
 )
 
 Write-Output "Start ($(Get-Date))"
 Write-Output "PythonRoot: '$PythonRoot'"
 
 $ProgressPreference = 'SilentlyContinue'
+
+# Clear CC/CXX environment variables that may interfere with the build.
+# These are not needed as CMake and Boost detect MSVC automatically.
+if ($CleanCC) {
+    $origCC = $env:CC
+    $origCXX = $env:CXX
+    $env:CC = $null
+    $env:CXX = $null
+}
 
 $PythonRoot = $PythonRoot -replace "\\", "/" # replace backslashes
 $PythonExe = "$PythonRoot/Python.exe"
@@ -128,6 +138,11 @@ if (-Not $SkipInstall) {
 
     # Test module import
     & $PythonExe -c "import alembic"
+}
+
+if ($CleanCC) {
+    $env:CC = $origCC
+    $env:CXX = $origCXX
 }
 
 Write-Output "End ($(Get-Date))"
